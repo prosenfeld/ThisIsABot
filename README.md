@@ -1,6 +1,6 @@
 # ThisIsABot
 
-Python bot with random helpful functions. 
+Python discord bot with random helpful functions. 
 
 **ThisIsABot Help.** 
 
