@@ -10,19 +10,20 @@ from aiohttp import ClientSession
 from keep_alive import keep_alive
 import unicodedata
 #from keep_alive import keep_alive
-
-logging.basicConfig(level=logging.INFO)
+from discord.ext import commands
+#ךogging.basicConfig(level=logging.DEBUG)
 
 
 logger = logging.getLogger('discord')
-logging.basicConfig(filename='discord.log', encoding='utf-8', level=logging.DEBUG, format = '%(asctime)s:%(levelname)s:%(name)s: %(message)s')
+logging.basicConfig(filename='discord.log', level=logging.DEBUG, format = '%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 #logger.addHandler(handler)
 print("sanity test")
 logging.warning("sanity test")
 
 client = discord.Client()
-
-map_key = os.getenv("MAPBOX_KEY")
+map_key=os.getenv("MAPBOX_KEY")
+#async def ping(channel):
+#    await channel.send(f'pong!\n{round(bot.latency * 1000)}ms')
 
 async def get_weather(place="Washington DC"):
     async with ClientSession() as session:
@@ -45,13 +46,15 @@ async def pull_a_passuk(sefer, perek, passuk, translation=False):
         json_of_txt = await get_text.json()
         logging.debug(json_of_txt)
         nikudnik = json_of_txt["he"]
+
         if translation:
             give_translation =json_of_txt["text"]
             normalized = unicodedata.normalize("NFKD", nikudnik)
             flattened = "".join([c for c in normalized if not unicodedata.combining(c)])
             flattened = flattened.replace("(פ)" ,"")
             flattened = flattened.replace("(ס)" ,"")
-            return flattened +"\n " +give_translation.replace("<i></i>" ,"")
+            give_translation=give_translation.replace("<i>" , " ").replace("</i>"," ").replace("<b>"," ").replace("</b>"," ")
+            return flattened +"\n " +give_translation
         else:
             normalized = unicodedata.normalize("NFKD", nikudnik)
             flattened = "".join([c for c in normalized if not unicodedata.combining(c)])
@@ -150,6 +153,7 @@ async def get_zmanim(place:str):
 async def on_ready():
     print("We have logged in as {0.user}".format(client))
     logging.info("We have logged in as {0.user}".format(client))
+    await client.change_presence(activity=discord.Game(name='Use _help for help'))
 
 
 @client.event
@@ -160,7 +164,11 @@ async def on_message(message):
         return
 
     if message.content.startswith("_hello"):
-        await message.channel.send("Hello!")
+        await message.channel.send("Hello {}!".format(message.author.mention))
+        await message.author.send("Greetings!")
+        #await message.channel.send(discord.ext.commands.Bot.latency)
+        print(message)
+        print(message.content)
 
     elif message.content.startswith("COOL_KID_DONT_TOUCH"):
         x = await test()
@@ -212,9 +220,15 @@ async def on_message(message):
             if "-t" in message.content:
                  response = await pull_a_passuk(sefer, perek, passuk, translation=True)
             else:
-                 response = await pull_a_passuk(sefer ,perek, passuk, translation=False)
+                 response = await pull_a_passuk(sefer, perek, passuk, translation=False)
             logging.debug(response)
-            await message.channel.send(response)
+            if len(response) > 2000:
+                blocks_required = math.ceil(len(response) / 2000)
+                logging.debug(blocks_required)
+                for i in range(blocks_required):
+                    await message.channel.send(response[i * 2000:(i + 1) * 2000])
+            else:
+                await message.channel.send(response)
         except:
             await message.channel.send("Invalid Syntax. Must be _passuk {Book} {Perek} {Passuk}")
     elif message.content.startswith("_perek"):
@@ -250,6 +264,7 @@ async def on_message(message):
     Command _passuk [Book] [Perek] [Passuk] {-t}  outputs the specified passuk. Adding "-t" will add translation.
     Command _perek [Book] [Perek] {-t} outputs the specified perek Adding "-t" will add translation.
     Command _zmanim [place] will provide today's zmanim in that place. 
+    There is a hidden command. Not telling you what it is...
     For help message @ computerjoe314
      """)
 
