@@ -295,7 +295,7 @@ async def help(ctx):
         Command _passuk [Book] [Perek] [Passuk] [-t]  outputs the specified passuk. Adding "-t" will add translation.
         Command _perek [Book] [Perek] [-t] outputs the specified perek Adding "-t" will add translation.
         Command _zmanim [place] will provide today's zmanim in that place.
-        There is a hidden command. Not telling you what it is...
+        There is a hidden command. Not telling you what it is... :-)
         For help message @ computerjoe314
 
          """,
