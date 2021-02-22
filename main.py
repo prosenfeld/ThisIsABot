@@ -7,7 +7,8 @@ import math
 import logging
 from datetime import datetime, timedelta
 from aiohttp import ClientSession
-from keep_alive import keep_alive
+
+#from keep_alive import keep_alive
 import unicodedata
 #from keep_alive import keep_alive
 from discord.ext import commands
@@ -22,9 +23,14 @@ logging.warning("sanity test")
 
 client = discord.Client()
 map_key=os.getenv("MAPBOX_KEY")
+
 #async def ping(channel):
 #    await channel.send(f'pong!\n{round(bot.latency * 1000)}ms')
-
+def whois(member: discord.Member):
+    embed=discord.Embed()
+    user = discord.get_member(member)
+    embed.set_thumbnail(url=user.avatar_url)
+    return embed
 async def get_weather(place="Washington DC"):
     async with ClientSession() as session:
         place = place.lower()
@@ -39,8 +45,18 @@ async def get_weather(place="Washington DC"):
         real_city_country = new_json["observations"]["location"][0]["observation"][0]["country"]
         real_city_state = new_json["observations"]["location"][0]["observation"][0]["state"]
         # print(f"In {place} it is currently {temp} degrees C ({(float(temp)*1.8)+32}F) and  {desc}.")
-        return (
-            f"In {real_city_name}, {real_city_state}, {real_city_country} it is currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.")
+        embed = discord.Embed(
+            title=f'Weather for {real_city_name}, {real_city_state}, {real_city_country} ',
+            description=f"Currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.",
+            color = discord.Colour.red()
+        )
+        embed.set_thumbnail(url=new_json["observations"]["location"][0]["observation"][0]["iconLink"]+f"?apikey={map_key}")
+        print(new_json["observations"]["location"][0]["observation"][0]["iconLink"])
+        # return (
+        #f"In {real_city_name}, {real_city_state}, {real_city_country} it is currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.")
+        return embed
+        #return (
+            #f"In {real_city_name}, {real_city_state}, {real_city_country} it is currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.")
 
 async def pull_a_passuk(sefer, perek, passuk, translation=False):
     async with ClientSession() as session:
@@ -173,9 +189,9 @@ async def on_message(message):
         print(message.content)
 
     elif message.content.startswith("COOL_KID_DONT_TOUCH"):
-        x = await test()
-        logging.debug(x)
-        await message.channel.send(x["he"])
+        person=message.content.split()[1]
+        await message.channel.send(embed=whois(person))
+
 
     elif message.content.startswith("_zmanim"):
         place_name = " ".join(split_message[1:])
@@ -211,7 +227,7 @@ async def on_message(message):
         #try:
         weather_there = await get_weather(place_name)
         #weather_there = weather_two(weather_there)
-        await message.channel.send(weather_there)
+        await message.channel.send(embed=weather_there)
         #except:
             #await message.channel.send("I don't know that place name.")
             #print(weather_there)
@@ -284,6 +300,6 @@ async def on_message(message):
         # print(response.text)
 
 
-keep_alive()
+#keep_alive()
 
 client.run(os.getenv("TOKEN"))
