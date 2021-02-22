@@ -31,14 +31,16 @@ async def get_weather(place="Washington DC"):
         response = await session.request(method='GET', url=f"https://weather.ls.hereapi.com/weather/1.0/report.json?apiKey={map_key}&product=observation&name={place}")
         response_json = await response.json()
         logging.debug(response_json)
+        print(response_json)
         new_json = response_json
         temp = new_json["observations"]["location"][0]["observation"][0]["temperature"]
         desc = new_json["observations"]["location"][0]["observation"][0]["description"]
         real_city_name = new_json["observations"]["location"][0]["observation"][0]["city"]
         real_city_country = new_json["observations"]["location"][0]["observation"][0]["country"]
+        real_city_state = new_json["observations"]["location"][0]["observation"][0]["state"]
         # print(f"In {place} it is currently {temp} degrees C ({(float(temp)*1.8)+32}F) and  {desc}.")
         return (
-            f"In {real_city_name},{real_city_country} it is currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.")
+            f"In {real_city_name}, {real_city_state}, {real_city_country} it is currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.")
 
 async def pull_a_passuk(sefer, perek, passuk, translation=False):
     async with ClientSession() as session:
@@ -177,28 +179,31 @@ async def on_message(message):
 
     elif message.content.startswith("_zmanim"):
         place_name = " ".join(split_message[1:])
-        #try:
-        gz = await get_zmanim(place_name)
-        await message.channel.send \
-            ("**Warning! This is a very early version of this feature. Don't trust it halachically yet.**")
-        await message.channel.send(f"""
-    Zmanim for {gz["city"]}, {gz["state"]},{gz["country"]}
-    Proportional Hour today is {gz["shaot_zmaniot"]} minutes
-    Alos hashachar: {gz["alos hashachar"]}
-    Misheyakir (earliest tefilllin): {gz["misheyakir"]}
-    Sunrise: {gz["sunrise"]}
-    Sof Zeman K'reas Sh'ma: {gz["latest shma"]}
-    Sof Zeman T'feilah: {gz["latest davening"]}
-    Midday: {gz["chatzot"]}
-    Mincha Gedola: (Earliest Mincha) {gz["mincha gedola"]}
-    Mincha K'tana: {gz["mincha katana"]}
-    Plag HaMincha: {gz["plag hamincha"]}
-    Candle Lighting: {gz["candlelighting"]}
-    Sunset: {gz["sunset"]}
-    Tzais Hakochavim: {gz["tzais hakochavim"]}
-    """)
-        #except:
-            #await message.channel.send("Something didn't go right.")
+        try:
+          gz = await get_zmanim(place_name)
+          #await old_string= f"Zmanim for {gz["city"]}, {gz["state"]},{gz["country"]}"
+
+          embed=discord.Embed(
+            title=f'Zmanim for {gz["city"]}, {gz["state"]}, {gz["country"]}',
+            color=discord.Colour.red()
+          )
+          embed.add_field(name="Proportional Hour", value="{} minutes".format(gz["shaot_zmaniot"]), inline=True)
+          embed.add_field(name="Alos hashachar:", value=gz["alos hashachar"], inline=True)
+          embed.add_field(name="Misheyakir (earliest tefilllin):", value=gz["misheyakir"], inline=False)
+          embed.add_field(name="Sunrise:", value=gz["sunrise"], inline=True)
+          embed.add_field(name="Sof Zeman K'reas Sh'ma:", value=gz["latest shma"], inline=True)
+          embed.add_field(name="Sof Zeman T'feilah:", value=gz["latest davening"], inline=True)
+          embed.add_field(name="Midday:", value=gz["chatzot"], inline=True)
+          embed.add_field(name=" Mincha Gedola (Earliest Mincha):", value=gz["mincha gedola"], inline=True)
+          embed.add_field(name="Mincha K'tana::", value=gz["mincha katana"], inline=True)
+          embed.add_field(name="Plag HaMincha:", value=gz["plag hamincha"], inline=True)
+          embed.add_field(name="Candle Lighting:", value=gz["candlelighting"], inline=True)
+          embed.add_field(name="Sunset:", value=gz["sunset"], inline=True)
+          embed.add_field(name="Tzais Hakochavim:", value=gz["tzais hakochavim"], inline=True)
+          await message.channel.send(embed=embed)
+
+        except:
+          await message.channel.send("Something didn't go right.")
 
     elif message.content.startswith("_weather"):
         place_name = " ".join(split_message[1:])
@@ -256,17 +261,22 @@ async def on_message(message):
       #await message.channel.send("repeat repeat")
 
     elif message.content.startswith("_help"):
-
-        await message.channel.send("""ThisIsABot Help. 
+        link_to=discord.Embed(
+          title="ThisIsABot Help",
+          description = """
     Things in brackets mean things that you should replace when using the command
     Command _hello sends a hello message
     Comand _weather [place] will output weather in that place
-    Command _passuk [Book] [Perek] [Passuk] {-t}  outputs the specified passuk. Adding "-t" will add translation.
-    Command _perek [Book] [Perek] {-t} outputs the specified perek Adding "-t" will add translation.
+    Command _passuk [Book] [Perek] [Passuk] [-t]  outputs the specified passuk. Adding "-t" will add translation.
+    Command _perek [Book] [Perek] [-t] outputs the specified perek Adding "-t" will add translation.
     Command _zmanim [place] will provide today's zmanim in that place. 
     There is a hidden command. Not telling you what it is...
     For help message @ computerjoe314
-     """)
+
+     """,
+          color=discord.Colour.teal()
+        )
+        await message.channel.send(embed=link_to)
 
         # print(response)
 
