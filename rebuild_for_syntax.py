@@ -1,3 +1,4 @@
+
 import discord
 import os
 import requests
@@ -7,28 +8,25 @@ import logging
 from datetime import datetime, timedelta
 from aiohttp import ClientSession
 
-# from keep_alive import keep_alive
+#from keep_alive import keep_alive
 import unicodedata
 from keep_alive import keep_alive
 from discord.ext import commands
-
-# ךogging.basicConfig(level=logging.DEBUG)
+#ךogging.basicConfig(level=logging.DEBUG)
 
 
 logger = logging.getLogger('discord')
-logging.basicConfig(filename='discord.log', level=logging.DEBUG,
-                    format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
-# logger.addHandler(handler)
+logging.basicConfig(filename='discord.log', level=logging.DEBUG, format = '%(asctime)s:%(levelname)s:%(name)s: %(message)s')
+#logger.addHandler(handler)
 print("sanity test")
 logging.warning("sanity test")
 
-client = commands.Bot(command_prefix="_", help_command=None)
-map_key = "kSYQGZL5moU7XU2sDy3oZb6mJPULqKHK_68gr3Wg0Xs"
+client = commands.Bot(command_prefix="_",help_command=None)
+map_key="kSYQGZL5moU7XU2sDy3oZb6mJPULqKHK_68gr3Wg0Xs"
 
-
-# async def ping(channel):
+#async def ping(channel):
 #    await channel.send(f'pong!\n{round(bot.latency * 1000)}ms')
-# def whois(member: discord.Member):
+#def whois(member: discord.Member):
 #    embed=discord.Embed()
 #    user = discord.get_member(member)
 #    embed.set_thumbnail(url=user.avatar_url)
@@ -36,8 +34,7 @@ map_key = "kSYQGZL5moU7XU2sDy3oZb6mJPULqKHK_68gr3Wg0Xs"
 async def get_weather(place="Washington DC"):
     async with ClientSession() as session:
         place = place.lower()
-        response = await session.request(method='GET',
-                                         url=f"https://weather.ls.hereapi.com/weather/1.0/report.json?apiKey={map_key}&product=observation&name={place}")
+        response = await session.request(method='GET', url=f"https://weather.ls.hereapi.com/weather/1.0/report.json?apiKey={map_key}&product=observation&name={place}")
         response_json = await response.json()
         logging.debug(response_json)
         print(response_json)
@@ -51,47 +48,42 @@ async def get_weather(place="Washington DC"):
         embed = discord.Embed(
             title=f'Weather for {real_city_name}, {real_city_state}, {real_city_country} ',
             description=f"Currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.",
-            color=discord.Colour.red()
+            color = discord.Colour.red()
         )
-        embed.set_thumbnail(
-            url=new_json["observations"]["location"][0]["observation"][0]["iconLink"] + f"?apikey={map_key}")
+        embed.set_thumbnail(url=new_json["observations"]["location"][0]["observation"][0]["iconLink"]+f"?apikey={map_key}")
         print(new_json["observations"]["location"][0]["observation"][0]["iconLink"])
         # return (
-        # f"In {real_city_name}, {real_city_state}, {real_city_country} it is currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.")
+        #f"In {real_city_name}, {real_city_state}, {real_city_country} it is currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.")
         return embed
-        # return (
-        # f"In {real_city_name}, {real_city_state}, {real_city_country} it is currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.")
-
+        #return (
+            #f"In {real_city_name}, {real_city_state}, {real_city_country} it is currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.")
 
 async def pull_a_passuk(sefer, perek, passuk, translation=False):
     async with ClientSession() as session:
-        get_text = await session.request(method='GET',
-                                         url=f"https://www.sefaria.org/api/texts/{sefer}.{perek}.{passuk}?context=0 ")
+        get_text = await session.request(method='GET', url=f"https://www.sefaria.org/api/texts/{sefer}.{perek}.{passuk}?context=0 ")
         json_of_txt = await get_text.json()
         logging.debug(json_of_txt)
         nikudnik = json_of_txt["he"]
 
         if translation:
-            give_translation = json_of_txt["text"]
+            give_translation =json_of_txt["text"]
             normalized = unicodedata.normalize("NFKD", nikudnik)
             flattened = "".join([c for c in normalized if not unicodedata.combining(c)])
-            flattened = flattened.replace("(פ)", "")
-            flattened = flattened.replace("(ס)", "")
-            give_translation = give_translation.replace("<i>", " ").replace("</i>", " ").replace("<b>", " ").replace(
-                "</b>", " ")
-            return flattened + "\n " + give_translation
+            flattened = flattened.replace("(פ)" ,"")
+            flattened = flattened.replace("(ס)" ,"")
+            give_translation=give_translation.replace("<i>" , " ").replace("</i>"," ").replace("<b>"," ").replace("</b>"," ")
+            return flattened +"\n " +give_translation
         else:
             normalized = unicodedata.normalize("NFKD", nikudnik)
             flattened = "".join([c for c in normalized if not unicodedata.combining(c)])
-            flattened = flattened.replace("(פ)", "")
-            flattened = flattened.replace("(ס)", "")
+            flattened = flattened.replace("(פ)" ,"")
+            flattened = flattened.replace("(ס)" ,"")
             return flattened
 
 
 async def pull_a_perek(sefer, perek, translation):
     async with ClientSession() as session:
-        get_text = await session.request(method='GET',
-                                         url=f"https://www.sefaria.org/api/texts/{sefer}.{perek}?context=0")
+        get_text = await session.request(method='GET', url=f"https://www.sefaria.org/api/texts/{sefer}.{perek}?context=0")
         json_of_txt = await get_text.json()
         logging.debug(json_of_txt)
         if translation:
@@ -100,14 +92,13 @@ async def pull_a_perek(sefer, perek, translation):
             flattened = "".join([c for c in normalized if not unicodedata.combining(c)])
             logging.debug(flattened)
             give_translation = "".join(json_of_txt["text"])
-            return flattened + give_translation.replace("<i></i>", "")
+            return flattened + give_translation.replace("<i></i>" ,"")
         else:
             nikudnik = "".join(json_of_txt["he"])
             normalized = unicodedata.normalize("NFKD", nikudnik)
             flattened = "".join([c for c in normalized if not unicodedata.combining(c)])
             logging.debug(flattened)
             return flattened
-
 
 async def test():
     async with ClientSession() as session:
@@ -116,65 +107,65 @@ async def test():
         return response_json
 
 
-async def get_zmanim(place: str):
+async def get_zmanim(place:str):
     async with ClientSession() as session:
-        relevant_results = {}
-        pulled_timing = await session.request(method='GET',
-                                              url=f"https://weather.ls.hereapi.com/weather/1.0/report.json?apiKey={map_key}&product=forecast_astronomy&name={place}")
+        relevant_results ={}
+        pulled_timing = await session.request(method='GET', url=f"https://weather.ls.hereapi.com/weather/1.0/report.json?apiKey={map_key}&product=forecast_astronomy&name={place}")
         new_json = await pulled_timing.json()
         print(new_json)
-        relevant_results["city"] = new_json["astronomy"]["city"]
-        relevant_results["state"] = new_json["astronomy"]["state"]
-        relevant_results["country"] = new_json["astronomy"]["country"]
-        relevant_results["sunrise"] = new_json["astronomy"]["astronomy"][0]["sunrise"]
-        relevant_results["sunset"] = new_json["astronomy"]["astronomy"][0]["sunset"]
+        relevant_results["city" ] = new_json["astronomy"]["city"]
+        relevant_results["state" ] = new_json["astronomy"]["state"]
+        relevant_results["country" ] = new_json["astronomy"]["country"]
+        relevant_results["sunrise" ] = new_json["astronomy"]["astronomy"][0]["sunrise"]
+        relevant_results["sunset" ] = new_json["astronomy"]["astronomy"][0]["sunset"]
 
         sunrise = relevant_results["sunrise"][:-2]
         sunset = relevant_results["sunset"][:-2]
-        hours = sunset[:-2].replace(":", "")
+        hours = sunset[:-2].replace(":" , "")
         minutes = sunset[-2:]
-        sunset = str(int(hours) + 12) + minutes
-        sunset = sunset[:-2] + ":" + sunset[-2:]
+        sunset = str(int(hours) +12) +minutes
+        sunset = sunset[:-2] +":" +sunset[-2:]
         FMT = '%H:%M'
         tdelta = datetime.strptime(sunset, FMT) - datetime.strptime(sunrise, FMT)
-        sunset = datetime.strptime(sunset, FMT)
-        sunrise = datetime.strptime(sunrise, FMT)
+        sunset = datetime.strptime(sunset ,FMT)
+        sunrise = datetime.strptime(sunrise ,FMT)
 
-        shaot_zmaniot = tdelta / 12
-        shaot_zmaniot_convert = round(shaot_zmaniot.seconds / 60, 4)
+        shaot_zmaniot = tdelta /12
+        shaot_zmaniot_convert = round(shaot_zmaniot.seconds /60 ,4)
         relevant_results["shaot_zmaniot"] = shaot_zmaniot_convert
 
-        chatzot = shaot_zmaniot * 6 + sunrise
-        relevant_results["chatzot"] = (shaot_zmaniot * 6 + sunrise).strftime('%H:%M')
+        chatzot = shaot_zmaniot * 6 +sunrise
+        relevant_results["chatzot"]  = (shaot_zmaniot * 6 +sunrise).strftime('%H:%M')
 
-        alos = sunrise - timedelta(minutes=72)
-        relevant_results["alos hashachar"] = datetime.strftime(alos, "%H:%M")
+        alos = sunrise - timedelta(minutes = 72)
+        relevant_results["alos hashachar"] =datetime.strftime(alos ,"%H:%M")
 
-        tzais = sunset + timedelta(minutes=45)
-        relevant_results["tzais hakochavim"] = datetime.strftime(tzais, "%H:%M")
+        tzais = sunset +timedelta(minutes=45)
+        relevant_results["tzais hakochavim"] = datetime.strftime(tzais ,"%H:%M")
 
-        latest_davening = (shaot_zmaniot * 4 + sunrise).strftime('%H:%M')
+        latest_davening = (shaot_zmaniot * 4 +sunrise).strftime('%H:%M')
         relevant_results["latest davening"] = latest_davening
 
-        mincha_gedola = (shaot_zmaniot * 0.5) + chatzot
+        mincha_gedola =(shaot_zmaniot *0.5 ) +chatzot
         relevant_results["mincha gedola"] = mincha_gedola.strftime("%H:%M")
 
-        candlelighting = sunset - timedelta(minutes=18)
+        candlelighting = sunset -timedelta(minutes=18)
         relevant_results["candlelighting"] = candlelighting.strftime("%H:%M")
 
-        mincha_katana = sunset - (shaot_zmaniot * 2.5)
+        mincha_katana = sunset - (shaot_zmaniot * 2.5 )
         relevant_results["mincha katana"] = mincha_katana.strftime("%H:%M")
 
         plag = sunset - (shaot_zmaniot * 1.25)
         relevant_results["plag hamincha"] = plag.strftime("%H:%M")
 
-        latest_shma = sunrise + (shaot_zmaniot * 3)
+        latest_shma = sunrise +(shaot_zmaniot * 3)
         relevant_results["latest shma"] = latest_shma.strftime("%H:%M")
 
-        misheyakir = sunrise - timedelta(minutes=45)
+        misheyakir = sunrise -timedelta(minutes=45)
         relevant_results["misheyakir"] = misheyakir.strftime("%H:%M")
 
         return relevant_results
+
 
 
 @client.event
@@ -183,17 +174,15 @@ async def on_ready():
     logging.info("We have logged in as {0.user}".format(client))
     await client.change_presence(activity=discord.Game(name='Use _help for help'))
 
-
 @client.command()
 async def hello(ctx):
     print(ctx)
     await ctx.message.author.send("Greetings!")
     await ctx.send("Hello {}".format(ctx.message.author.mention))
 
-
 @client.command()
 async def zmanim(ctx):
-    split_message = ctx.message.content.split()
+    split_message=ctx.message.content.split()
     print(split_message)
     place_name = " ".join(split_message[1:])
     try:
@@ -223,7 +212,6 @@ async def zmanim(ctx):
     except:
         await ctx.send("Something didn't go right.")
 
-
 @client.command()
 async def weather(ctx):
     try:
@@ -236,7 +224,6 @@ async def weather(ctx):
     except:
         await ctx.send("Something didn't go right.")
 
-
 @client.command()
 async def passuk(ctx):
     split_message = ctx.message.content.split()
@@ -245,9 +232,9 @@ async def passuk(ctx):
         perek = split_message[2]
         passuk = split_message[3]
         if "-t" in ctx.message.content:
-            response = await pull_a_passuk(sefer, perek, passuk, translation=True)
+             response = await pull_a_passuk(sefer, perek, passuk, translation=True)
         else:
-            response = await pull_a_passuk(sefer, perek, passuk, translation=False)
+             response = await pull_a_passuk(sefer, perek, passuk, translation=False)
         logging.debug(response)
         if len(response) > 2000:
             blocks_required = math.ceil(len(response) / 2000)
@@ -258,7 +245,6 @@ async def passuk(ctx):
             await ctx.send(response)
     except:
         await ctx.send("Invalid Syntax. Must be _passuk {Book} {Perek} {Passuk}")
-
 
 @client.command()
 async def perek(ctx):
@@ -282,27 +268,24 @@ async def perek(ctx):
             await ctx.send(response)
     except:
         await ctx.send("Invalid Syntax. Must be _passuk {Book} {Perek}")
-
-
 @client.command()
 async def help(ctx):
-    link_to = discord.Embed(
-        title="ThisIsABot Help",
-        description="""
+    link_to=discord.Embed(
+              title="ThisIsABot Help",
+              description = """
         Things in brackets mean things that you should replace when using the command
         Command _hello sends a hello message
         Comand _weather [place] will output weather in that place
         Command _passuk [Book] [Perek] [Passuk] [-t]  outputs the specified passuk. Adding "-t" will add translation.
         Command _perek [Book] [Perek] [-t] outputs the specified perek Adding "-t" will add translation.
         Command _zmanim [place] will provide today's zmanim in that place.
-        There is a hidden command. Not telling you what it is... :-)
+        There is a hidden command. Not telling you what it is...
         For help message @ computerjoe314
-
+    
          """,
-        color=discord.Colour.teal()
-    )
+              color=discord.Colour.teal()
+            )
     await ctx.send(embed=link_to)
-
 
 keep_alive()
 client.run("ODAwODYwNTY0NDk0NjE0NTU4.YAYRhQ.XLPPZxPKgGobrJUlrf6UxAb8EB4")
