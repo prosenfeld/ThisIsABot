@@ -23,7 +23,7 @@ print("sanity test")
 logging.warning("sanity test")
 
 client = commands.Bot(command_prefix="_", help_command=None)
-map_key = "kSYQGZL5moU7XU2sDy3oZb6mJPULqKHK_68gr3Wg0Xs"
+map_key = os.getenv("MAPBOX_KEY")
 
 
 # async def ping(channel):
@@ -305,4 +305,4 @@ async def help(ctx):
 
 
 keep_alive()
-client.run("ODAwODYwNTY0NDk0NjE0NTU4.YAYRhQ.XLPPZxPKgGobrJUlrf6UxAb8EB4")
+client.run(os.getenv("TOKEN"))
