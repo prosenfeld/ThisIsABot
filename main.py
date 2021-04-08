@@ -1,7 +1,5 @@
 import discord
 import os
-import requests
-import json
 import math
 import logging
 from datetime import datetime, timedelta
@@ -16,9 +14,7 @@ from discord.ext import commands
 
 
 logger = logging.getLogger('discord')
-logging.basicConfig(filename='discord.log', level=logging.DEBUG,
-                    format='%(asctime)s:%(levelname)s:%(name)s: %(message)s')
-# logger.addHandler(handler)
+logging.basicConfig(filename='discord.log' , level=logging.DEBUG, format='(asctime)s:%(levelname)s:%(name)s: %(message)s')
 print("sanity test")
 logging.warning("sanity test")
 
@@ -47,14 +43,20 @@ async def get_weather(place="Washington DC"):
         real_city_name = new_json["observations"]["location"][0]["observation"][0]["city"]
         real_city_country = new_json["observations"]["location"][0]["observation"][0]["country"]
         real_city_state = new_json["observations"]["location"][0]["observation"][0]["state"]
+        wind_speed= new_json["observations"]["location"][0]["observation"][0]["windSpeed"]
+        wind_direction= new_json["observations"]["location"][0]["observation"][0]["windDesc"]
+        wind_direction_long=new_json["observations"]["location"][0]["observation"][0]["windDirection"]
+        print(wind_direction_long)
+        
         # print(f"In {place} it is currently {temp} degrees C ({(float(temp)*1.8)+32}F) and  {desc}.")
         embed = discord.Embed(
             title=f'Weather for {real_city_name}, {real_city_state}, {real_city_country} ',
-            description=f"Currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.",
+            description=f"Currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}. \n Wind {wind_speed} km/h ({round(float(wind_speed)*0.6213,2)} mph) from the {wind_direction} ({wind_direction_long}°).",
             color=discord.Colour.red()
         )
         embed.set_thumbnail(
             url=new_json["observations"]["location"][0]["observation"][0]["iconLink"] + f"?apikey={map_key}")
+        
         print(new_json["observations"]["location"][0]["observation"][0]["iconLink"])
         # return (
         # f"In {real_city_name}, {real_city_state}, {real_city_country} it is currently {temp} degrees C ({round((float(temp) * 1.8) + 32, 2)} F) and  {desc}.")
@@ -100,6 +102,8 @@ async def pull_a_perek(sefer, perek, translation):
             flattened = "".join([c for c in normalized if not unicodedata.combining(c)])
             logging.debug(flattened)
             give_translation = "".join(json_of_txt["text"])
+            give_translation = give_translation.replace("<i>", " ").replace("</i>", " ").replace("<b>", " ").replace(
+                "</b>", " ")
             return flattened + give_translation.replace("<i></i>", "")
         else:
             nikudnik = "".join(json_of_txt["he"])
