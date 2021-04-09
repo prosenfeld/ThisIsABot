@@ -307,6 +307,14 @@ async def help(ctx):
     )
     await ctx.send(embed=link_to)
 
+    
+@client.command()
+async def explode(ctx):
+  try:
+    await ctx.message.delete()
+  except:
+    pass
+  await ctx.send(":exploding_head:")
 
 keep_alive()
 client.run(os.getenv("TOKEN"))
