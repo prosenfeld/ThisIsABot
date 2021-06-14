@@ -11,6 +11,7 @@ Python discord bot with random helpful functions.
         Command _perek [Book] [Perek] [-t] outputs the specified perek Adding "-t" will add translation.
         Command _zmanim [place] will provide today's zmanim in that place.
         Command _echo [Message] echos.
+        Command _xkcd will send the latest xkcd. 
         There is a hidden command. Not telling you what it is... :-)
         For help message @ computerjoe314
 

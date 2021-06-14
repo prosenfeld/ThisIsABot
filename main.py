@@ -4,6 +4,7 @@ import math
 import logging
 from datetime import datetime, timedelta
 from aiohttp import ClientSession
+import feedparser
 
 # from keep_alive import keep_alive
 import unicodedata
@@ -21,6 +22,12 @@ logging.warning("sanity test")
 client = commands.Bot(command_prefix="_", help_command=None)
 map_key = os.getenv("MAPBOX_KEY")
 
+def find_xkcd():
+  comics = feedparser.parse("https://xkcd.com/rss.xml")
+  summary = comics['entries'][0]["summary"]
+  xkcd_url= summary[summary.find("src=")+5:summary.find(".png")+4]
+  xkcd_text= summary[summary.find("alt=")+5:summary.find("src=")-2]
+  return xkcd_text,xkcd_url
 
 # async def ping(channel):
 #    await channel.send(f'pong!\n{round(bot.latency * 1000)}ms')
@@ -300,6 +307,7 @@ async def help(ctx):
         Command _perek [Book] [Perek] [-t] outputs the specified perek Adding "-t" will add translation.
         Command _zmanim [place] will provide today's zmanim in that place.
         Command _echo [Message] echos.
+        Command _xkcd will send the latest xkcd. 
         There is a hidden command. Not telling you what it is... :-)
         For help message @ computerjoe314
 
@@ -326,6 +334,13 @@ async def echo(ctx):
     pass
   print(str(ctx.message.content.split()[1:]))
   await ctx.send(ctx.message.author.mention + " says " + " ".join(ctx.message.content.split()[1:]))
+
+@client.command()
+async def xkcd(ctx):
+  latest = find_xkcd()
+  await ctx.send(latest[1])
+  await ctx.send(latest[0])
+
 
 keep_alive()
 client.run(os.getenv("TOKEN"))
