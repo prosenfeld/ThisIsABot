@@ -253,13 +253,13 @@ async def passuk(ctx):
         else:
             response = await pull_a_passuk(sefer, perek, passuk, translation=False)
         logging.debug(response)
-        if len(response) > 2000:
-            blocks_required = math.ceil(len(response) / 2000)
+        if len(response) > 1994:
+            blocks_required = math.ceil(len(response) / 1994)
             logging.debug(blocks_required)
             for i in range(blocks_required):
-                await ctx.send(response[i * 2000:(i + 1) * 2000])
+                await ctx.send("```"+response[i * 1994:(i + 1) * 1994]+"```")
         else:
-            await ctx.send(response)
+            await ctx.send("```"+response+"```")
     except:
         await ctx.send("Invalid Syntax. Must be _passuk {Book} {Perek} {Passuk}")
 
@@ -277,13 +277,13 @@ async def perek(ctx):
         perek = split_message[2]
         response = await pull_a_perek(sefer, perek, translation)
 
-        if len(response) > 2000:
-            blocks_required = math.ceil(len(response) / 2000)
+        if len(response) > 1994:
+            blocks_required = math.ceil(len(response) / 1994)
             logging.debug(blocks_required)
             for i in range(blocks_required):
-                await ctx.send(response[i * 2000:(i + 1) * 2000])
+                await ctx.send("```"+response[i * 1994:(i + 1) * 1994]+"```")
         else:
-            await ctx.send(response)
+            await ctx.send("```"+response+"```")
     except:
         await ctx.send("Invalid Syntax. Must be _passuk {Book} {Perek}")
 
@@ -307,14 +307,24 @@ async def help(ctx):
     )
     await ctx.send(embed=link_to)
 
-    
+
 @client.command()
 async def explode(ctx):
   try:
     await ctx.message.delete()
   except:
     pass
-  await ctx.send(":exploding_head:")
+  await ctx.send(":brain: \n :exploding_head:")
+
+
+@client.command()
+async def echo(ctx):
+  try:
+    await ctx.message.delete()
+  except:
+    pass
+  print(str(ctx.message.content.split()[1:]))
+  await ctx.send(ctx.message.author.mention + " says " + " ".join(ctx.message.content.split()[1:]))
 
 keep_alive()
 client.run(os.getenv("TOKEN"))
