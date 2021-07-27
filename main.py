@@ -5,6 +5,9 @@ import logging
 from datetime import datetime, timedelta
 from aiohttp import ClientSession
 import feedparser
+import random
+import requests
+from bs4 import BeautifulSoup
 
 # from keep_alive import keep_alive
 import unicodedata
@@ -23,11 +26,22 @@ client = commands.Bot(command_prefix="_", help_command=None)
 map_key = os.getenv("MAPBOX_KEY")
 
 def find_xkcd():
-  comics = feedparser.parse("https://xkcd.com/rss.xml")
-  summary = comics['entries'][0]["summary"]
-  xkcd_url= summary[summary.find("src=")+5:summary.find(".png")+4]
-  xkcd_text= summary[summary.find("alt=")+5:summary.find("src=")-2]
-  return xkcd_text,xkcd_url
+    comics = feedparser.parse("https://xkcd.com/rss.xml")
+    summary = comics['entries'][0]["summary"]
+    xkcd_number = comics ['entries'][0]["links"][0]["href"].split("/")[-2]
+    xkcd_url= summary[summary.find("src=")+5:summary.find(".png")+4]
+    xkcd_text= summary[summary.find("alt=")+5:summary.find("src=")-2]
+    return xkcd_text,xkcd_url,xkcd_number
+
+
+def get_xkcd_by_number(number):
+    xkcd = requests.get("http://xkcd.com/{}".format(number))
+    soup = BeautifulSoup(xkcd.text)
+    comic = soup.find("div", {"id": "comic"}).img['src'][2:]
+    comic="https://"+comic
+    text = soup.find("div", {"id": "comic"}).img['title']
+    return comic,text,number
+
 
 # async def ping(channel):
 #    await channel.send(f'pong!\n{round(bot.latency * 1000)}ms')
@@ -337,9 +351,17 @@ async def echo(ctx):
 
 @client.command()
 async def xkcd(ctx):
-  latest = find_xkcd()
-  await ctx.send(latest[1])
-  await ctx.send(latest[0])
+  message = ctx.message.content
+  if "random" in message.lower():
+    total_xkcds=find_xkcd()[2]
+    random_xkcd = get_xkcd_by_number(random.randint(0,int(total_xkcds)))
+    await ctx.send(random_xkcd[0])
+    await ctx.send(random_xkcd[1]+" - (XKCD #"+str(random_xkcd[2])+")")
+
+  else:
+    latest = find_xkcd()
+    await ctx.send(latest[1])
+    await ctx.send(latest[0])
 
 
 keep_alive()
