@@ -321,7 +321,7 @@ async def help(ctx):
         Command _perek [Book] [Perek] [-t] outputs the specified perek Adding "-t" will add translation.
         Command _zmanim [place] will provide today's zmanim in that place.
         Command _echo [Message] echos.
-        Command _xkcd will send the latest xkcd. 
+        Command _xkcd [random][number] will send the latest xkcd. Adding random will make it a random xkcd. Putting a number instead will give the xkcd of that number.
         There is a hidden command. Not telling you what it is... :-)
         For help message @ computerjoe314
 
@@ -352,16 +352,23 @@ async def echo(ctx):
 @client.command()
 async def xkcd(ctx):
   message = ctx.message.content
-  if "random" in message.lower():
-    total_xkcds=find_xkcd()[2]
-    random_xkcd = get_xkcd_by_number(random.randint(0,int(total_xkcds)))
-    await ctx.send(random_xkcd[0])
-    await ctx.send(random_xkcd[1]+" - (XKCD #"+str(random_xkcd[2])+")")
-
-  else:
-    latest = find_xkcd()
-    await ctx.send(latest[1])
-    await ctx.send(latest[0])
+  try:
+    if "random" in message.lower():
+      total_xkcds=find_xkcd()[2]
+      random_xkcd = get_xkcd_by_number(random.randint(0,int(total_xkcds)))
+      await ctx.send(random_xkcd[0])
+      await ctx.send(random_xkcd[1]+" - (XKCD #"+str(random_xkcd[2])+")")
+    elif len(message.split()) > 1 and message.split()[1].isdigit():
+      specific_xkcd = get_xkcd_by_number(int(message.split()[1]))
+      await ctx.send(specific_xkcd[0])
+      await ctx.send(specific_xkcd[1]+" - (XKCD #"+str(specific_xkcd[2])+")")
+    else:
+      latest = find_xkcd()
+      await ctx.send(latest[1])
+      await ctx.send(latest[0]+" - (XKCD #"+str(latest[2])+")")
+  except Exception:
+    await ctx.send("Something did work. ")
+    print("Something failed: " + Exception)
 
 
 keep_alive()
